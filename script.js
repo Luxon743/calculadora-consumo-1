@@ -6,6 +6,8 @@ const inputKmInicio = document.getElementById('km-inicio');
 const inputKmActual = document.getElementById('km-actual');
 const inputLitros = document.getElementById('litros');
 const divResultado = document.getElementById('resultado');
+const btnCalcular = document.getElementById('btn-calcular');
+const btnReset = document.getElementById('btn-reset');
 
 let viajeActual = {
     kmInicial: null,
@@ -63,6 +65,27 @@ formulario.addEventListener('submit', function(event){
         inputKmInicio.value = kmInicio;
         inputKmInicio.disabled = true;
     }
+    if (isNaN(kmInicio) || isNaN(kmActual)) {
+        divResultado.innerHTML = '<p class="text-red-500">El kilometraje actual es obligatorio</p>';
+        return;
+    }
+
+    if (isNaN(litros) || litros <= 0) {
+        divResultado.innerHTML = '<p class="text-red-500">Ingresá litros válidos</p>';
+        return;
+    }
+    let ultimoKm = viajeActual.kmInicial;
+    if (viajeActual.cargas.length > 0) {
+        ultimoKm = viajeActual.cargas[viajeActual.cargas.length - 1].km;
+    }
+    if (kmActual <= ultimoKm) {
+        divResultado.innerHTML = `
+            <p class="text-red-500">
+                El KM actual debe ser mayor al último registrado (${ultimoKm})
+            </p>
+        `;
+        return;
+    }
     viajeActual.cargas.push({
         km: kmActual,
         litros: litros
@@ -77,5 +100,53 @@ formulario.addEventListener('submit', function(event){
     inputKmActual.value = "";
     inputLitros.value = "";
     //const consumo = (litros / distancia) * 100;
+});
+
+btnCalcular.addEventListener('click', function(){
+
+    if (viajeActual.cargas.length === 0) {
+        divResultado.innerHTML = '<p class="text-red-500">No hay cargas registradas</p>';
+        return;
+    }
+
+    let totalLitros = 0;
+
+    viajeActual.cargas.forEach(carga => {
+        totalLitros += carga.litros;
+    });
+
+    const kmFinal = viajeActual.cargas[viajeActual.cargas.length - 1].km;
+    const distancia = kmFinal - viajeActual.kmInicial;
+
+    if (distancia <= 0) {
+        divResultado.innerHTML = '<p class="text-red-500">Error en el cálculo de distancia</p>';
+        return;
+    }
+
+    const consumo = (totalLitros / distancia) * 100;
+
+    divResultado.innerHTML = `
+        <div class="bg-green-100 text-green-700 p-4 rounded-lg">
+            <p><strong>Distancia total:</strong> ${distancia} km</p>
+            <p><strong>Litros totales:</strong> ${totalLitros} L</p>
+            <p><strong>Consumo promedio:</strong> ${consumo.toFixed(2)} L/100km</p>
+        </div>
+    `;
+});
+
+btnReset.addEventListener('click', function(){
+    // Resetear objeto
+    viajeActual = {
+        kmInicial: null,
+        cargas: []
+    };
+    // Limpiar localStorage
+    localStorage.removeItem('viajeActual');
+    // Resetear inputs
+    inputKmInicio.disabled = false;
+    formulario.reset();
+    // Limpiar UI
+    renderTabla();
+    divResultado.innerHTML = '<p class="text-orange-500">Viaje reiniciado</p>';
 });
 
