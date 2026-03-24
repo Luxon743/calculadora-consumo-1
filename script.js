@@ -1,5 +1,6 @@
 // 1. Seleccionamos los elementos del DOM y los guardamos en constantes
 // Usamos getElementById para vincular el HTML con nuestro código JS
+const tablaHistorial = document.getElementById('tabla-historial');
 const formulario = document.getElementById('calc-form');
 const inputKmInicio = document.getElementById('km-inicio');
 const inputKmActual = document.getElementById('km-actual');
@@ -11,42 +12,70 @@ let viajeActual = {
     cargas: []
 }
 
+const cargaGuardada = localStorage.getItem('viajeActual');
+
+if (cargaGuardada) {
+    viajeActual = JSON.parse(cargaGuardada);
+    // restaurar km inicial en el input
+    if (viajeActual.kmInicial !== null) {
+        inputKmInicio.value = viajeActual.kmInicial;
+        inputKmInicio.disabled = true;
+    }
+}
+
+function renderTabla() {
+    tablaHistorial.innerHTML = '';
+    if (viajeActual.cargas.length === 0) {
+        tablaHistorial.innerHTML = `
+            <tr>
+                <td colspan="2" class="text-center text-gray-400 p-4">
+                    No hay cargas registradas
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    viajeActual.cargas.forEach(carga => {
+        tablaHistorial.innerHTML += `
+            <tr class="border-b">
+                <td class="p-2">${carga.km}</td>
+                <td class="p-2">${carga.litros}</td>
+            </tr>
+        `;
+    });
+}
+renderTabla();
+
 formulario.addEventListener('submit', function(event){
     event.preventDefault();
     const kmInicio = parseFloat(inputKmInicio.value);
     const kmActual = parseFloat(inputKmActual.value);
     const litros = parseFloat(inputLitros.value);
-
     if (kmActual <= kmInicio) {
         // Si la distancia es 0 o negativa, mostramos un error y salimos de la función
         divResultado.innerHTML = '<p style="color: red;">Error: Los Km finales deben ser mayores a los iniciales.</p>';
         return; // El return vacío detiene la ejecución aquí
     }
-
     // Primera carga
     if (viajeActual.kmInicial === null) {
         viajeActual.kmInicial = kmInicio;
-        
         // Bloqueo del input de Kilometraje Inicial luego de la primera carga
         inputKmInicio.value = kmInicio;
         inputKmInicio.disabled = true;
     }
-
     viajeActual.cargas.push({
         km: kmActual,
         litros: litros
     })
-    
     localStorage.setItem('viajeActual', JSON.stringify(viajeActual));
-
+    renderTabla();
     divResultado.innerHTML = `
         <div class="success-message">
             <p>Carga agregada correctamente</p>
         </div>
     `;
-
     inputKmActual.value = "";
     inputLitros.value = "";
     //const consumo = (litros / distancia) * 100;
-
 });
+
