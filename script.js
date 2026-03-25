@@ -65,11 +65,12 @@ formulario.addEventListener('submit', function(event){
         inputKmInicio.value = kmInicio;
         inputKmInicio.disabled = true;
     }
+
+    //validaciones
     if (isNaN(kmInicio) || isNaN(kmActual)) {
         divResultado.innerHTML = '<p class="text-red-500">El kilometraje actual es obligatorio</p>';
         return;
     }
-
     if (isNaN(litros) || litros <= 0) {
         divResultado.innerHTML = '<p class="text-red-500">Ingresá litros válidos</p>';
         return;
@@ -84,6 +85,14 @@ formulario.addEventListener('submit', function(event){
                 El KM actual debe ser mayor al último registrado (${ultimoKm})
             </p>
         `;
+        return;
+    }
+    if (kmInicio < 0 || kmActual < 0) {
+        divResultado.innerHTML = '<p class="text-red-500">Los kilómetros no pueden ser negativos</p>';
+        return;
+    }
+    if (litros <= 0) {
+        divResultado.innerHTML = '<p class="text-red-500">Los litros deben ser mayores a 0</p>';
         return;
     }
     viajeActual.cargas.push({
