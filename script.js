@@ -108,7 +108,6 @@ formulario.addEventListener('submit', function(event){
     `;
     inputKmActual.value = "";
     inputLitros.value = "";
-    //const consumo = (litros / distancia) * 100;
 });
 
 btnCalcular.addEventListener('click', function(){
